@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跨年狂欢</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            animation: bgRotation 15s infinite linear;
+        }
+
+        @keyframes bgRotation {
+            0% {
+                background-image: url('1.jpg');
+            }
+
+            33% {
+                background-image: url('2.jpg');
+            }
+
+            66% {
+                background-image: url('21.jpg');
+            }
+
+            100% {
+                background-image: url('521.jpg');
+            }
+        }
+
+        #fireworks {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="background"></div>
+    <canvas id="fireworks"></canvas>
+    <script>
+        document.addEventListener('click', function () {
+            const fireworks = document.getElementById('fireworks');
+            fireworks.style.display = 'block';
+            const canvas = document.getElementById('fireworks');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const numParticles = 100;
+            const particles = [];
+
+            function Particle() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = Math.random() * -10 - 5;
+                this.radius = Math.random() * 3 + 1;
+                this.color = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+            }
+
+            Particle.prototype.update = function () {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.1;
+                this.radius -= 0.05;
+            };
+
+            Particle.prototype.draw = function () {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            };
+
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    if (particles[i].radius < 0) {
+                        particles.splice(i, 1);
+                        i--;
+                    }
+                }
+                if (particles.length > 0) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        });
+
+        // 添加跨年快乐文案
+        const text = document.createElement('div');
+        text.style.position = 'absolute';
+        text.style.top = '50%';
+        text.style.left = '50%';
+        text.style.transform = 'translate(-50%, -50%)';
+        text.style.color = 'white';
+        text.style.fontSize = '40px';
+        text.textContent = '满满跨年快乐';
+        document.body.appendChild(text);
+    </script>
+</body>
+
+</html>
