@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跨年狂欢</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            animation: bgRotation 15s infinite linear;
+        }
+
+        @keyframes bgRotation {
+            0% {
+                background-image: url('1.jpg');
+            }
+
+            33% {
+                background-image: url('2.jpg');
+            }
+
+            66% {
+                background-image: url('21.jpg');
+            }
+
+            100% {
+                background-image: url('521.jpg');
+            }
+        }
+
+        #fireworks {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="background"></div>
+    <canvas id="fireworks"></canvas>
+    <script>
+        document.addEventListener('click', function () {
+            const fireworks = document.getElementById('fireworks');
+            fireworks.style.display = 'block';
+            const canvas = document.getElementById('fireworks');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const numFireworks = 3;
+            const particles = [];
+
+            function createFirework() {
+                const centerX = Math.random() * canvas.width;
+                const centerY = canvas.height;
+                const hue = Math.floor(Math.random() * 360);
+                const firework = {
+                    x: centerX,
+                    y: centerY,
+                    hue: hue,
+                    exploded: false,
+                    particles: []
+                };
+                const numInitialParticles = 5;
+                for (let i = 0; i < numInitialParticles; i++) {
+                    const p = {
+                        x: centerX,
+                        y: centerY,
+                        vx: (Math.random() - 0.5) * 3,
+                        vy: Math.random() * -15,
+                        radius: 2,
+                        color: `hsl(${hue}, 100%, 50%)`
+                    };
+                    firework.particles.push(p);
+                }
+                return firework;
+            }
+
+            const allFireworks = [];
+            for (let i = 0; i < numFireworks; i++) {
+                const firework = createFirework();
+                allFireworks.push(firework);
+            }
+
+            function update() {
+                const gravity = 0.05;
+                for (let i = 0; i < allFireworks.length; i++) {
+                    const firework = allFireworks[i];
+                    if (!firework.exploded) {
+                        for (let j = 0; j < firework.particles.length; j++) {
+                            const p = firework.particles[j];
+                            p.x += p.vx;
+                            p.y += p.vy;
+                            p.vy += gravity;
+                            if (p.y < canvas.height / 3) {
+                                firework.exploded = true;
+                                const numExplosionParticles = 50;
+                                for (let k = 0; k < numExplosionParticles; k++) {
+                                    const newParticle = {
+                                        x: firework.x,
+                                        y: firework.y,
+                                        vx: (Math.random() - 0.5) * 15,
+                                        vy: (Math.random() - 0.5) * 15,
+                                        radius: Math.random() * 3,
+                                        color: `hsl(${firework.hue}, 100%, 50%)`
+                                    };
+                                    firework.particles.push(newParticle);
+                                }
+                                break;
+                            }
+                        }
+                    } else {
+                        for (let j = 0; j < firework.particles.length; j++) {
+                            const p = firework.particles[j];
+                            p.x += p.vx;
+                            p.y += p.vy;
+                            p.vy += gravity;
+                            p.radius -= 0.03;
+                            if (p.radius < 0) {
+                                firework.particles.splice(j, 1);
+                                j--;
+                            }
+                        }
+                    }
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < allFireworks.length; i++) {
+                    const firework = allFireworks[i];
+                    for (let j = 0; j < firework.particles.length; j++) {
+                        const p = firework.particles[j];
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.fill();
+                    }
+                }
+
+                // 调整文案位置，放在画布上方
+                ctx.font = "40px Arial";
+                ctx.fillStyle = "white";
+                ctx.fillText("满满跨年快乐", canvas.width / 2 - 100, canvas.height / 4);
+
+                // 绘制2025字样
+                ctx.font = "60px Arial";
+                ctx.fillStyle = "gold";
+                ctx.fillText("2025", canvas.width / 2 - 60, canvas.height / 2);
+            }
+
+            function animate() {
+                update();
+                draw();
+                if (allFireworks.some(f => f.particles.length > 0)) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        });
+    </script>
+</body>
+
+</html>
